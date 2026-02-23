@@ -14,6 +14,12 @@ import '../features/wallet/domain/usecases/withdraw_crypto_usecase.dart';
 import '../features/wallet/presentation/bloc/wallet_bloc.dart';
 import '../features/ludo/data/repositories/ludo_repository_impl.dart';
 import '../features/ludo/presentation/bloc/ludo_bloc.dart';
+import '../features/freefire/data/repositories/tournament_repository_impl.dart';
+import '../features/freefire/domain/usecases/get_tournaments_usecase.dart';
+import '../features/freefire/domain/usecases/get_tournament_details_usecase.dart';
+import '../features/freefire/domain/usecases/join_tournament_usecase.dart';
+import '../features/freefire/domain/usecases/submit_result_usecase.dart';
+import '../features/freefire/presentation/bloc/freefire_bloc.dart';
 import 'routes.dart';
 import 'theme.dart';
 
@@ -50,11 +56,22 @@ class BattleArenaApp extends StatelessWidget {
     );
     final ludoBloc = LudoBloc(repository: ludoRepository);
 
+    final tournamentRepository =
+        TournamentRepositoryImpl(apiClient: apiClient);
+    final freefireBloc = FreefireBloc(
+      getTournaments: GetTournamentsUseCase(tournamentRepository),
+      getTournamentDetails: GetTournamentDetailsUseCase(tournamentRepository),
+      joinTournament: JoinTournamentUseCase(tournamentRepository),
+      submitResult: SubmitResultUseCase(tournamentRepository),
+      repository: tournamentRepository,
+    );
+
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>.value(value: authBloc),
         BlocProvider<WalletBloc>.value(value: walletBloc),
         BlocProvider<LudoBloc>.value(value: ludoBloc),
+        BlocProvider<FreefireBloc>.value(value: freefireBloc),
       ],
       child: MaterialApp.router(
         title: 'Battle Arena',

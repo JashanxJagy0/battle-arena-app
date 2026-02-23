@@ -16,6 +16,7 @@ import '../features/ludo/presentation/pages/ludo_lobby_screen.dart';
 import '../features/ludo/presentation/pages/ludo_matchmaking_screen.dart';
 import '../features/ludo/presentation/pages/ludo_game_screen.dart';
 import '../features/ludo/presentation/pages/ludo_result_screen.dart';
+import '../features/freefire/presentation/pages/tournament_list_screen.dart';
 
 class AppRouter {
   static GoRouter createRouter(AuthBloc authBloc) {
@@ -70,7 +71,7 @@ class AppRouter {
             ),
             GoRoute(
               path: '/home/tournaments',
-              builder: (context, state) => const _PlaceholderScreen(title: 'Tournaments'),
+              builder: (context, state) => const TournamentListScreen(),
             ),
             GoRoute(
               path: '/home/wallet',
@@ -113,6 +114,22 @@ class AppRouter {
               prizeWon: (extra['prizeWon'] as num?)?.toDouble() ?? 0.0,
             );
           },
+        ),
+        GoRoute(
+          path: '/freefire/tournaments',
+          builder: (context, state) => const TournamentListScreen(),
+        ),
+        GoRoute(
+          path: '/freefire/tournament/:id/room',
+          builder: (context, state) => _PlaceholderScreen(
+            title: 'Room Card ${state.pathParameters['id']}',
+          ),
+        ),
+        GoRoute(
+          path: '/freefire/tournament/:id/results',
+          builder: (context, state) => _PlaceholderScreen(
+            title: 'Tournament Results ${state.pathParameters['id']}',
+          ),
         ),
         GoRoute(
           path: '/tournament/:id',

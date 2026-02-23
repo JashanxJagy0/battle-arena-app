@@ -53,6 +53,14 @@ class ApiEndpoints {
   static const String markNotificationRead = '/notifications/:id/read';
   static const String fcmToken = '/notifications/fcm-token';
 
+  // Free Fire Tournaments
+  static const String freefireTournaments = '/freefire/tournaments';
+  static const String freefireTournamentDetails = '/freefire/tournaments/:id';
+  static const String freefireJoinTournament = '/freefire/tournaments/:id/join';
+  static const String freefireCheckIn = '/freefire/tournaments/:id/checkin';
+  static const String freefireRoomDetails = '/freefire/tournaments/:id/room';
+  static const String freefireSubmitResult = '/freefire/tournaments/:id/result';
+
   // WebSocket namespaces
   static const String wsBaseUrl = 'wss://api.battle-arena.app';
   static const String wsLudoNamespace = '/ludo';
