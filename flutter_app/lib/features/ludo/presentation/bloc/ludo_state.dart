@@ -128,10 +128,10 @@ class LudoInProgress extends LudoState {
   }
 
   /// Returns a copy with [lastDiceValue] explicitly cleared to null.
-  LudoInProgress clearDiceValue() => copyWith(lastDiceValue: null);
+  LudoInProgress clearDiceValue() => copyWith(lastDiceValue: _absent);
 
   /// Returns a copy with emoji fields explicitly cleared to null.
-  LudoInProgress clearEmoji() => copyWith(lastEmoji: null, lastEmojiUserId: null);
+  LudoInProgress clearEmoji() => copyWith(lastEmoji: _absent, lastEmojiUserId: _absent);
 }
 
 class LudoMyTurn extends LudoState {

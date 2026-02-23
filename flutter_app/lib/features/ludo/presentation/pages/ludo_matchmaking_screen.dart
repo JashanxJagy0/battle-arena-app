@@ -94,7 +94,10 @@ class _LudoMatchmakingScreenState extends State<LudoMatchmakingScreen>
     return BlocConsumer<LudoBloc, LudoState>(
       listener: (context, state) {
         if (state is LudoInProgress) {
-          context.go('/ludo/match/${widget.matchId}');
+          context.go(
+            '/ludo/match/${widget.matchId}',
+            extra: {'myUserId': state.myUserId},
+          );
         } else if (state is LudoError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

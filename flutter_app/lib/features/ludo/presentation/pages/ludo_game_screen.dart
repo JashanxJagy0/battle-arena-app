@@ -70,7 +70,14 @@ class _LudoGameScreenState extends State<LudoGameScreen> {
     return BlocConsumer<LudoBloc, LudoState>(
       listener: (context, state) {
         if (state is LudoGameOver) {
-          context.go('/ludo/result/${widget.matchId}');
+          context.go(
+            '/ludo/result/${widget.matchId}',
+            extra: {
+              'winnerId': state.winnerId,
+              'myUserId': state.myUserId,
+              'prizeWon': state.prizeWon,
+            },
+          );
         } else if (state is LudoError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
