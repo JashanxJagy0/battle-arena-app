@@ -19,6 +19,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   late TabController _tabController;
   String _selectedPeriod = 'weekly';
 
+  static const int _topRanksCount = 100;
   final List<String> _tabs = ['ludo', 'freefire', 'earnings', 'referrals'];
   final List<String> _periods = ['daily', 'weekly', 'monthly', 'all_time'];
 
@@ -174,7 +175,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
               ),
 
               // My rank sticky at bottom
-              if (loaded?.myEntry != null && (loaded!.myEntry!.rank > 100 || entries.isEmpty))
+              if (loaded?.myEntry != null && (loaded!.myEntry!.rank > _topRanksCount || entries.isEmpty))
                 Container(
                   decoration: BoxDecoration(
                     color: AppColors.surface,

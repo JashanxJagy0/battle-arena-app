@@ -270,7 +270,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 const Text('🔥', style: TextStyle(fontSize: 16)),
                 const SizedBox(width: 8),
-                Text('Free Fire UID: ', style: const TextStyle(color: Colors.white54, fontSize: 13)),
+                const Text('Free Fire UID: ', style: TextStyle(color: Colors.white54, fontSize: 13)),
                 Text(profile.freefireUid!, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
               ],
             ),
