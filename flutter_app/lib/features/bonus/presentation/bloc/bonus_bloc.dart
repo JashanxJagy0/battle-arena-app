@@ -41,13 +41,13 @@ class BonusBloc extends Bloc<BonusEvent, BonusState> {
     emit(const BonusLoading());
     try {
       final results = await Future.wait([
-        _repository.getDailyBonus().catchError((_) => null),
-        _repository.getWeeklyBonus().catchError((_) => null),
-        _repository.getMonthlyBonus().catchError((_) => null),
-        _repository.getBonuses().catchError((_) => <dynamic>[]),
-        _repository.getCurrentStreak().catchError((_) => 0),
-        _repository.getWeeklyProgress().catchError((_) => <String, dynamic>{}),
-        _repository.getMonthlyProgress().catchError((_) => <String, dynamic>{}),
+        _repository.getDailyBonus().then<dynamic>((v) => v).catchError((_) => null),
+        _repository.getWeeklyBonus().then<dynamic>((v) => v).catchError((_) => null),
+        _repository.getMonthlyBonus().then<dynamic>((v) => v).catchError((_) => null),
+        _repository.getBonuses().then<dynamic>((v) => v).catchError((_) => <dynamic>[]),
+        _repository.getCurrentStreak().then<dynamic>((v) => v).catchError((_) => 0),
+        _repository.getWeeklyProgress().then<dynamic>((v) => v).catchError((_) => <String, dynamic>{}),
+        _repository.getMonthlyProgress().then<dynamic>((v) => v).catchError((_) => <String, dynamic>{}),
       ]);
 
       emit(BonusLoaded(
