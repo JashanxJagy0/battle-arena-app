@@ -303,6 +303,7 @@ class _GameCard extends StatelessWidget {
 }
 
 class _TournamentSlider extends StatelessWidget {
+  const _TournamentSlider({super.key});
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -361,6 +362,7 @@ class _TournamentSlider extends StatelessWidget {
 }
 
 class _BonusReminder extends StatelessWidget {
+  const _BonusReminder({super.key});
   @override
   Widget build(BuildContext context) {
     return NeonContainer(

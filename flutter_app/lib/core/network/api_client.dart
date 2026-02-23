@@ -123,7 +123,7 @@ class ApiClient {
 class _AuthInterceptor extends Interceptor {
   final StorageService _storageService;
   final Dio _dio;
-  bool _isRefreshing = false;
+  Future<bool>? _refreshFuture;
 
   _AuthInterceptor({required StorageService storageService, required Dio dio})
       : _storageService = storageService,
@@ -140,31 +140,46 @@ class _AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (err.response?.statusCode == 401 && !_isRefreshing) {
-      _isRefreshing = true;
-      try {
-        final refreshToken = await _storageService.getRefreshToken();
-        if (refreshToken != null) {
-          final response = await _dio.post(
-            ApiEndpoints.refreshToken,
-            data: {'refreshToken': refreshToken},
-            options: Options(headers: {'Authorization': null}),
-          );
-          final newAccessToken = response.data['accessToken'] as String?;
-          if (newAccessToken != null) {
-            await _storageService.saveAccessToken(newAccessToken);
-            err.requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
-            final retryResponse = await _dio.fetch(err.requestOptions);
-            handler.resolve(retryResponse);
-            return;
-          }
+    if (err.response?.statusCode == 401) {
+      // If a refresh is already in progress, wait for it
+      _refreshFuture ??= _attemptTokenRefresh();
+      final refreshed = await _refreshFuture;
+      _refreshFuture = null;
+
+      if (refreshed) {
+        final newToken = await _storageService.getAccessToken();
+        err.requestOptions.headers['Authorization'] = 'Bearer $newToken';
+        try {
+          final retryResponse = await _dio.fetch(err.requestOptions);
+          handler.resolve(retryResponse);
+          return;
+        } catch (e) {
+          // Fall through to next(err)
         }
-      } catch (_) {
-        await _storageService.clearTokens();
-      } finally {
-        _isRefreshing = false;
       }
     }
     handler.next(err);
+  }
+
+  Future<bool> _attemptTokenRefresh() async {
+    try {
+      final refreshToken = await _storageService.getRefreshToken();
+      if (refreshToken == null) return false;
+
+      final response = await _dio.post(
+        ApiEndpoints.refreshToken,
+        data: {'refreshToken': refreshToken},
+        options: Options(headers: {'Authorization': null}),
+      );
+      final newAccessToken = response.data['accessToken'] as String?;
+      if (newAccessToken != null) {
+        await _storageService.saveAccessToken(newAccessToken);
+        return true;
+      }
+      return false;
+    } catch (_) {
+      await _storageService.clearTokens();
+      return false;
+    }
   }
 }
