@@ -1,0 +1,81 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-backend:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build and push backend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/battle-arena-backend:latest
+            ghcr.io/${{ github.repository_owner }}/battle-arena-backend:${{ github.sha }}
+
+      - name: Deploy backend to DigitalOcean droplet
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DIGITALOCEAN_HOST }}
+          username: ${{ secrets.DIGITALOCEAN_USERNAME }}
+          key: ${{ secrets.DIGITALOCEAN_SSH_KEY }}
+          script: |
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            docker pull ghcr.io/${{ github.repository_owner }}/battle-arena-backend:latest
+            cd /opt/battle-arena
+            docker compose -f docker-compose.prod.yml up -d --no-deps backend
+            docker compose -f docker-compose.prod.yml exec -T backend npx prisma migrate deploy
+
+  deploy-admin:
+    name: Deploy Admin Panel
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build and push admin Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./admin_panel
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/battle-arena-admin:latest
+            ghcr.io/${{ github.repository_owner }}/battle-arena-admin:${{ github.sha }}
+
+      - name: Deploy admin panel to DigitalOcean droplet
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DIGITALOCEAN_HOST }}
+          username: ${{ secrets.DIGITALOCEAN_USERNAME }}
+          key: ${{ secrets.DIGITALOCEAN_SSH_KEY }}
+          script: |
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            docker pull ghcr.io/${{ github.repository_owner }}/battle-arena-admin:latest
+            cd /opt/battle-arena
+            docker compose -f docker-compose.prod.yml up -d --no-deps admin
