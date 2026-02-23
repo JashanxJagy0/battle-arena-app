@@ -1,0 +1,177 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import '../features/auth/presentation/bloc/auth_bloc.dart';
+import '../features/auth/presentation/screens/splash_screen.dart';
+import '../features/auth/presentation/screens/onboarding_screen.dart';
+import '../features/auth/presentation/screens/login_screen.dart';
+import '../features/auth/presentation/screens/register_screen.dart';
+import '../features/auth/presentation/screens/otp_verification_screen.dart';
+import '../features/home/presentation/screens/home_screen.dart';
+
+class AppRouter {
+  static GoRouter createRouter(AuthBloc authBloc) {
+    return GoRouter(
+      initialLocation: '/',
+      redirect: (context, state) {
+        final authState = authBloc.state;
+        final isAuthenticated = authState is Authenticated;
+        final isAuthRoute = state.matchedLocation == '/login' ||
+            state.matchedLocation == '/register' ||
+            state.matchedLocation == '/otp' ||
+            state.matchedLocation == '/onboarding' ||
+            state.matchedLocation == '/';
+
+        if (!isAuthenticated && !isAuthRoute) {
+          return '/login';
+        }
+        return null;
+      },
+      refreshListenable: _AuthStateNotifier(authBloc),
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => const SplashScreen(),
+        ),
+        GoRoute(
+          path: '/onboarding',
+          builder: (context, state) => const OnboardingScreen(),
+        ),
+        GoRoute(
+          path: '/login',
+          builder: (context, state) => const LoginScreen(),
+        ),
+        GoRoute(
+          path: '/register',
+          builder: (context, state) => const RegisterScreen(),
+        ),
+        GoRoute(
+          path: '/otp',
+          builder: (context, state) => const OTPVerificationScreen(),
+        ),
+        ShellRoute(
+          builder: (context, state, child) => HomeScreen(child: child),
+          routes: [
+            GoRoute(
+              path: '/home',
+              builder: (context, state) => const _HomeTab(),
+            ),
+            GoRoute(
+              path: '/home/ludo',
+              builder: (context, state) => const _PlaceholderScreen(title: 'Ludo Lobby'),
+            ),
+            GoRoute(
+              path: '/home/tournaments',
+              builder: (context, state) => const _PlaceholderScreen(title: 'Tournaments'),
+            ),
+            GoRoute(
+              path: '/home/wallet',
+              builder: (context, state) => const _PlaceholderScreen(title: 'Wallet'),
+            ),
+            GoRoute(
+              path: '/home/profile',
+              builder: (context, state) => const _PlaceholderScreen(title: 'Profile'),
+            ),
+          ],
+        ),
+        GoRoute(
+          path: '/ludo/match/:matchId',
+          builder: (context, state) => _PlaceholderScreen(
+            title: 'Ludo Game ${state.pathParameters['matchId']}',
+          ),
+        ),
+        GoRoute(
+          path: '/ludo/result/:matchId',
+          builder: (context, state) => _PlaceholderScreen(
+            title: 'Ludo Result ${state.pathParameters['matchId']}',
+          ),
+        ),
+        GoRoute(
+          path: '/tournament/:id',
+          builder: (context, state) => _PlaceholderScreen(
+            title: 'Tournament ${state.pathParameters['id']}',
+          ),
+        ),
+        GoRoute(
+          path: '/tournament/:id/room',
+          builder: (context, state) => _PlaceholderScreen(
+            title: 'Room Card ${state.pathParameters['id']}',
+          ),
+        ),
+        GoRoute(
+          path: '/tournament/:id/results',
+          builder: (context, state) => _PlaceholderScreen(
+            title: 'Tournament Results ${state.pathParameters['id']}',
+          ),
+        ),
+        GoRoute(
+          path: '/wallet/deposit',
+          builder: (context, state) => const _PlaceholderScreen(title: 'Deposit'),
+        ),
+        GoRoute(
+          path: '/wallet/withdraw',
+          builder: (context, state) => const _PlaceholderScreen(title: 'Withdraw'),
+        ),
+        GoRoute(
+          path: '/wallet/transactions',
+          builder: (context, state) => const _PlaceholderScreen(title: 'Transaction History'),
+        ),
+        GoRoute(
+          path: '/wagers',
+          builder: (context, state) => const _PlaceholderScreen(title: 'Wager History'),
+        ),
+        GoRoute(
+          path: '/bonuses',
+          builder: (context, state) => const _PlaceholderScreen(title: 'Bonuses'),
+        ),
+        GoRoute(
+          path: '/leaderboard',
+          builder: (context, state) => const _PlaceholderScreen(title: 'Leaderboard'),
+        ),
+        GoRoute(
+          path: '/referral',
+          builder: (context, state) => const _PlaceholderScreen(title: 'Referral'),
+        ),
+        GoRoute(
+          path: '/notifications',
+          builder: (context, state) => const _PlaceholderScreen(title: 'Notifications'),
+        ),
+        GoRoute(
+          path: '/profile/edit',
+          builder: (context, state) => const _PlaceholderScreen(title: 'Edit Profile'),
+        ),
+        GoRoute(
+          path: '/settings',
+          builder: (context, state) => const _PlaceholderScreen(title: 'Settings'),
+        ),
+      ],
+    );
+  }
+}
+
+class _AuthStateNotifier extends ChangeNotifier {
+  _AuthStateNotifier(AuthBloc bloc) {
+    bloc.stream.listen((_) => notifyListeners());
+  }
+}
+
+class _HomeTab extends StatelessWidget {
+  const _HomeTab();
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.shrink();
+}
+
+class _PlaceholderScreen extends StatelessWidget {
+  final String title;
+
+  const _PlaceholderScreen({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Center(child: Text(title)),
+    );
+  }
+}
