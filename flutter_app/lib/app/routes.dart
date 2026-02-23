@@ -8,6 +8,10 @@ import '../features/auth/presentation/screens/login_screen.dart';
 import '../features/auth/presentation/screens/register_screen.dart';
 import '../features/auth/presentation/screens/otp_verification_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
+import '../features/wallet/presentation/pages/wallet_screen.dart';
+import '../features/wallet/presentation/pages/deposit_screen.dart';
+import '../features/wallet/presentation/pages/withdraw_screen.dart';
+import '../features/wallet/presentation/pages/transaction_history_screen.dart';
 
 class AppRouter {
   static GoRouter createRouter(AuthBloc authBloc) {
@@ -66,7 +70,7 @@ class AppRouter {
             ),
             GoRoute(
               path: '/home/wallet',
-              builder: (context, state) => const _PlaceholderScreen(title: 'Wallet'),
+              builder: (context, state) => const WalletScreen(),
             ),
             GoRoute(
               path: '/home/profile',
@@ -106,15 +110,15 @@ class AppRouter {
         ),
         GoRoute(
           path: '/wallet/deposit',
-          builder: (context, state) => const _PlaceholderScreen(title: 'Deposit'),
+          builder: (context, state) => const DepositScreen(),
         ),
         GoRoute(
           path: '/wallet/withdraw',
-          builder: (context, state) => const _PlaceholderScreen(title: 'Withdraw'),
+          builder: (context, state) => const WithdrawScreen(),
         ),
         GoRoute(
           path: '/wallet/transactions',
-          builder: (context, state) => const _PlaceholderScreen(title: 'Transaction History'),
+          builder: (context, state) => const TransactionHistoryScreen(),
         ),
         GoRoute(
           path: '/wagers',
