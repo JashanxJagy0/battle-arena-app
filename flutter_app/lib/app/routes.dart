@@ -17,6 +17,11 @@ import '../features/ludo/presentation/pages/ludo_matchmaking_screen.dart';
 import '../features/ludo/presentation/pages/ludo_game_screen.dart';
 import '../features/ludo/presentation/pages/ludo_result_screen.dart';
 import '../features/freefire/presentation/pages/tournament_list_screen.dart';
+import '../features/freefire/presentation/pages/tournament_detail_screen.dart';
+import '../features/freefire/presentation/pages/room_card_screen.dart';
+import '../features/freefire/presentation/pages/join_tournament_screen.dart';
+import '../features/freefire/presentation/pages/tournament_result_screen.dart';
+import '../features/freefire/domain/entities/tournament.dart';
 
 class AppRouter {
   static GoRouter createRouter(AuthBloc authBloc) {
@@ -120,34 +125,41 @@ class AppRouter {
           builder: (context, state) => const TournamentListScreen(),
         ),
         GoRoute(
-          path: '/freefire/tournament/:id/room',
-          builder: (context, state) => _PlaceholderScreen(
-            title: 'Room Card ${state.pathParameters['id']}',
+          path: '/freefire/tournament/:id/detail',
+          builder: (context, state) => TournamentDetailScreen(
+            tournamentId: state.pathParameters['id']!,
           ),
+        ),
+        GoRoute(
+          path: '/freefire/tournament/:id/join',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>? ?? {};
+            return JoinTournamentScreen(
+              tournamentId: state.pathParameters['id']!,
+              tournament: extra['tournament'] as Tournament?,
+            );
+          },
+        ),
+        GoRoute(
+          path: '/freefire/tournament/:id/room',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>? ?? {};
+            return RoomCardScreen(
+              tournamentId: state.pathParameters['id']!,
+              tournamentTitle: extra['title'] as String?,
+              roomVisibleAt: extra['roomVisibleAt'] as DateTime?,
+            );
+          },
         ),
         GoRoute(
           path: '/freefire/tournament/:id/results',
-          builder: (context, state) => _PlaceholderScreen(
-            title: 'Tournament Results ${state.pathParameters['id']}',
-          ),
-        ),
-        GoRoute(
-          path: '/tournament/:id',
-          builder: (context, state) => _PlaceholderScreen(
-            title: 'Tournament ${state.pathParameters['id']}',
-          ),
-        ),
-        GoRoute(
-          path: '/tournament/:id/room',
-          builder: (context, state) => _PlaceholderScreen(
-            title: 'Room Card ${state.pathParameters['id']}',
-          ),
-        ),
-        GoRoute(
-          path: '/tournament/:id/results',
-          builder: (context, state) => _PlaceholderScreen(
-            title: 'Tournament Results ${state.pathParameters['id']}',
-          ),
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>? ?? {};
+            return TournamentResultScreen(
+              tournamentId: state.pathParameters['id']!,
+              currentUserId: extra['userId'] as String?,
+            );
+          },
         ),
         GoRoute(
           path: '/wallet/deposit',

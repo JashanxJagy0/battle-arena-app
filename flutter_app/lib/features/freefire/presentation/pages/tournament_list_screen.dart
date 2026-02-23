@@ -7,6 +7,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/widgets/gradient_button.dart';
 import '../../domain/entities/tournament.dart';
 import '../bloc/freefire_bloc.dart';
+import '../widgets/tournament_card.dart';
 
 class TournamentListScreen extends StatefulWidget {
   const TournamentListScreen({super.key});
@@ -304,9 +305,15 @@ class _TournamentTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       itemCount: tournaments.length,
       itemBuilder: (context, index) {
-        return _TournamentCard(
+        return TournamentCard(
           tournament: tournaments[index],
           showCheckIn: showCheckIn,
+          onJoin: () => context
+              .read<FreefireBloc>()
+              .add(JoinTournament(tournaments[index].id)),
+          onCheckIn: () => context
+              .read<FreefireBloc>()
+              .add(CheckIn(tournaments[index].id)),
         );
       },
     );
