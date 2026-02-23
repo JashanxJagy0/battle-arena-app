@@ -91,7 +91,16 @@ export function WithdrawalApprovals() {
         ))}
         {tab === 'pending' && bulkSelected.length > 0 && (
           <button
-            onClick={() => { bulkSelected.forEach((id) => approveMutation.mutate(id)); setBulkSelected([]) }}
+            onClick={async () => {
+              try {
+                await Promise.all(bulkSelected.map((id) => transactionService.approveWithdrawal(id)))
+                toast.success(`${bulkSelected.length} withdrawal(s) approved`)
+                setBulkSelected([])
+                qc.invalidateQueries({ queryKey: ['withdrawals'] })
+              } catch {
+                toast.error('Some approvals failed')
+              }
+            }}
             className="ml-auto px-4 py-2 bg-secondary text-black rounded-lg text-sm font-medium"
           >
             Approve Selected ({bulkSelected.length})

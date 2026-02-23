@@ -15,6 +15,7 @@ export function DisputeManagement() {
   const pagination = usePagination(20)
   const [statusFilter, setStatusFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
+  const [search, setSearch] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [selectedDispute, setSelectedDispute] = useState<Dispute | null>(null)
@@ -23,7 +24,7 @@ export function DisputeManagement() {
   const [outcome, setOutcome] = useState<'resolved' | 'rejected'>('resolved')
 
   const { data, isLoading } = useQuery({
-    queryKey: ['disputes', pagination.page, statusFilter, typeFilter, startDate, endDate],
+    queryKey: ['disputes', pagination.page, search, statusFilter, typeFilter, startDate, endDate],
     queryFn: () => disputeService.getDisputes({
       page: pagination.page,
       limit: pagination.limit,
@@ -73,7 +74,7 @@ export function DisputeManagement() {
   return (
     <div className="space-y-5">
       <div className="bg-card border border-surface rounded-xl p-4 flex flex-wrap gap-3">
-        <SearchInput onSearch={() => {}} placeholder="Search disputes..." className="flex-1 min-w-[200px]" />
+        <SearchInput onSearch={setSearch} placeholder="Search disputes..." className="flex-1 min-w-[200px]" />
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-surface border border-surface rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary">
           <option value="">All Statuses</option>
           <option value="open">Open</option>

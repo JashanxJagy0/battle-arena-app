@@ -39,7 +39,6 @@ export function UserManagement() {
   const [banModal, setBanModal] = useState(false)
   const [unbanConfirm, setUnbanConfirm] = useState(false)
   const [creditModal, setCreditModal] = useState(false)
-  const [debitModal, setDebitModal] = useState(false)
   const [creditType, setCreditType] = useState<'credit' | 'debit'>('credit')
 
   const { data, isLoading } = useQuery({
@@ -75,7 +74,6 @@ export function UserManagement() {
       toast.success(`${creditType === 'credit' ? 'Credit' : 'Debit'} successful`)
       qc.invalidateQueries({ queryKey: ['users'] })
       setCreditModal(false)
-      setDebitModal(false)
     },
     onError: () => toast.error('Operation failed'),
   })

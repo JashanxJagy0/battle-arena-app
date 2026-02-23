@@ -38,6 +38,63 @@ const roomSchema = z.object({
 })
 type RoomForm = z.infer<typeof roomSchema>
 
+function ResultsModal({ isOpen, onClose, tournament }: { isOpen: boolean; onClose: () => void; tournament: Tournament | null }) {
+  const [rankInputs, setRankInputs] = useState<Record<number, string>>({ 1: '', 2: '', 3: '' })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handlePublish = async () => {
+    if (!tournament) return
+    const results = Object.entries(rankInputs)
+      .filter(([, userId]) => userId.trim())
+      .map(([rank, userId]) => ({ rank: Number(rank), userId: userId.trim() }))
+    if (results.length === 0) { toast.error('Enter at least one result'); return }
+    setIsSubmitting(true)
+    try {
+      await tournamentService.publishResults(tournament.id, results)
+      toast.success('Results published!')
+      onClose()
+    } catch {
+      toast.error('Failed to publish results')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Publish Results - ${tournament?.name}`}
+      size="md"
+      footer={
+        <>
+          <button onClick={onClose} className="px-4 py-2 border border-surface rounded-lg text-gray-300 hover:bg-surface transition-colors">Cancel</button>
+          <button onClick={handlePublish} disabled={isSubmitting} className="px-4 py-2 bg-secondary text-black rounded-lg font-medium disabled:opacity-50">
+            {isSubmitting ? 'Publishing...' : 'Publish Results'}
+          </button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <p className="text-gray-400 text-sm">Enter user IDs for each rank to distribute prizes.</p>
+        <div className="space-y-2">
+          {[1, 2, 3].map((rank) => (
+            <div key={rank} className="flex items-center gap-3">
+              <span className="text-gray-400 text-sm w-16">Rank {rank}</span>
+              <input
+                value={rankInputs[rank] ?? ''}
+                onChange={(e) => setRankInputs((prev) => ({ ...prev, [rank]: e.target.value }))}
+                className="flex-1 bg-surface border border-surface rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-primary"
+                placeholder="User ID"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
 export function TournamentManagement() {
   const qc = useQueryClient()
   const pagination = usePagination(20)
@@ -297,23 +354,11 @@ export function TournamentManagement() {
       </Modal>
 
       {/* Results Modal */}
-      <Modal isOpen={resultsModal} onClose={() => setResultsModal(false)} title={`Publish Results - ${selectedTournament?.name}`} size="md">
-        <div className="space-y-4">
-          <p className="text-gray-400 text-sm">Enter the user IDs and their final rankings to publish results and distribute prizes.</p>
-          <div className="space-y-2">
-            {[1, 2, 3].map((rank) => (
-              <div key={rank} className="flex items-center gap-3">
-                <span className="text-gray-400 text-sm w-16">Rank {rank}</span>
-                <input className="flex-1 bg-surface border border-surface rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-primary" placeholder="User ID" />
-              </div>
-            ))}
-          </div>
-          <div className="flex justify-end gap-3 pt-2">
-            <button onClick={() => setResultsModal(false)} className="px-4 py-2 border border-surface rounded-lg text-gray-300 hover:bg-surface transition-colors">Cancel</button>
-            <button onClick={() => { toast.success('Results published!'); setResultsModal(false) }} className="px-4 py-2 bg-secondary text-black rounded-lg font-medium">Publish Results</button>
-          </div>
-        </div>
-      </Modal>
+      <ResultsModal
+        isOpen={resultsModal}
+        onClose={() => setResultsModal(false)}
+        tournament={selectedTournament}
+      />
     </div>
   )
 }
