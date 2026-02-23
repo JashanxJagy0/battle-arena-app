@@ -1,0 +1,85 @@
+services:
+  backend:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/battle-arena-backend:latest
+    container_name: battle-arena-backend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - NOWPAYMENTS_API_KEY=${NOWPAYMENTS_API_KEY}
+      - FIREBASE_SERVICE_ACCOUNT=${FIREBASE_SERVICE_ACCOUNT}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - battle-arena-network
+
+  admin:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/battle-arena-admin:latest
+    container_name: battle-arena-admin
+    restart: unless-stopped
+    networks:
+      - battle-arena-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: battle-arena-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-battle_arena}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - battle-arena-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: battle-arena-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - battle-arena-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: battle-arena-nginx
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - certbot_www:/var/www/certbot:ro
+      - certbot_conf:/etc/letsencrypt:ro
+    depends_on:
+      - backend
+      - admin
+    networks:
+      - battle-arena-network
+
+networks:
+  battle-arena-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  certbot_www:
+  certbot_conf:
