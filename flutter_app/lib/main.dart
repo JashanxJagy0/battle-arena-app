@@ -42,6 +42,6 @@ void main() async {
   final authBloc = AuthBloc(authRepository: authRepository);
 
   runApp(
-    BattleArenaApp(authBloc: authBloc, apiClient: apiClient),
+    BattleArenaApp(authBloc: authBloc, apiClient: apiClient, storageService: storageService),
   );
 }

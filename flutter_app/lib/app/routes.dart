@@ -12,6 +12,10 @@ import '../features/wallet/presentation/pages/wallet_screen.dart';
 import '../features/wallet/presentation/pages/deposit_screen.dart';
 import '../features/wallet/presentation/pages/withdraw_screen.dart';
 import '../features/wallet/presentation/pages/transaction_history_screen.dart';
+import '../features/ludo/presentation/pages/ludo_lobby_screen.dart';
+import '../features/ludo/presentation/pages/ludo_matchmaking_screen.dart';
+import '../features/ludo/presentation/pages/ludo_game_screen.dart';
+import '../features/ludo/presentation/pages/ludo_result_screen.dart';
 
 class AppRouter {
   static GoRouter createRouter(AuthBloc authBloc) {
@@ -62,7 +66,7 @@ class AppRouter {
             ),
             GoRoute(
               path: '/home/ludo',
-              builder: (context, state) => const _PlaceholderScreen(title: 'Ludo Lobby'),
+              builder: (context, state) => const LudoLobbyScreen(),
             ),
             GoRoute(
               path: '/home/tournaments',
@@ -79,16 +83,36 @@ class AppRouter {
           ],
         ),
         GoRoute(
+          path: '/ludo/matchmaking',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, String>? ?? {};
+            return LudoMatchmakingScreen(
+              matchId: extra['matchId'] ?? '',
+              matchCode: extra['matchCode'] ?? '',
+            );
+          },
+        ),
+        GoRoute(
           path: '/ludo/match/:matchId',
-          builder: (context, state) => _PlaceholderScreen(
-            title: 'Ludo Game ${state.pathParameters['matchId']}',
-          ),
+          builder: (context, state) {
+            final extra = state.extra as Map<String, String>? ?? {};
+            return LudoGameScreen(
+              matchId: state.pathParameters['matchId']!,
+              myUserId: extra['myUserId'] ?? '',
+            );
+          },
         ),
         GoRoute(
           path: '/ludo/result/:matchId',
-          builder: (context, state) => _PlaceholderScreen(
-            title: 'Ludo Result ${state.pathParameters['matchId']}',
-          ),
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>? ?? {};
+            return LudoResultScreen(
+              matchId: state.pathParameters['matchId']!,
+              winnerId: extra['winnerId'] as String? ?? '',
+              myUserId: extra['myUserId'] as String? ?? '',
+              prizeWon: (extra['prizeWon'] as num?)?.toDouble() ?? 0.0,
+            );
+          },
         ),
         GoRoute(
           path: '/tournament/:id',
