@@ -18,7 +18,7 @@ class CryptoSelector extends StatelessWidget {
     'BTC': '₿',
     'ETH': 'Ξ',
     'USDT': '₮',
-    'USDC': '©',
+    'USDC': 'U',
     'SOL': '◎',
     'BNB': 'B',
   };
