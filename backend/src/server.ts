@@ -5,6 +5,8 @@ import app from './app';
 import { env } from './config/env';
 import { prisma } from './config/database';
 import { redis } from './config/redis';
+import { setIo } from './websockets/socket_manager';
+import { setupLudoGateway } from './modules/ludo/ludo.gateway';
 
 const server = http.createServer(app);
 
@@ -16,6 +18,7 @@ const io = new SocketIOServer(server, {
   },
 });
 
+// Register default namespace handlers
 io.on('connection', (socket) => {
   console.log(`Socket connected: ${socket.id}`);
 
@@ -32,6 +35,12 @@ io.on('connection', (socket) => {
     console.log(`Socket disconnected: ${socket.id}`);
   });
 });
+
+// Initialise socket manager (makes io available to services)
+setIo(io);
+
+// Register game-specific WebSocket namespaces
+setupLudoGateway(io);
 
 export { io };
 
