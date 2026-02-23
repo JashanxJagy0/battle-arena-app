@@ -5,6 +5,20 @@ import '../../domain/entities/ludo_game.dart';
 import '../../domain/repositories/ludo_repository.dart';
 import '../models/ludo_game_model.dart';
 
+/// Socket.IO event names for the Ludo namespace.
+class _LudoWsEvents {
+  _LudoWsEvents._();
+  static const String joinMatch = 'joinMatch';
+  static const String gameState = 'gameState';
+  static const String playerJoined = 'playerJoined';
+  static const String diceRolled = 'diceRolled';
+  static const String pieceMoved = 'pieceMoved';
+  static const String gameEnded = 'gameEnded';
+  static const String turnChanged = 'turnChanged';
+  static const String emoji = 'emoji';
+  static const String connectionState = 'connectionState';
+}
+
 class LudoRepositoryImpl implements LudoRepository {
   final ApiClient _apiClient;
   final WebSocketClient _wsClient;
@@ -86,7 +100,11 @@ class LudoRepositoryImpl implements LudoRepository {
   @override
   Future<void> connectToMatch(String matchId) async {
     await _wsClient.connect(ApiEndpoints.wsLudoNamespace);
-    _wsClient.emit(ApiEndpoints.wsLudoNamespace, 'joinMatch', {'matchId': matchId});
+    _wsClient.emit(
+      ApiEndpoints.wsLudoNamespace,
+      _LudoWsEvents.joinMatch,
+      {'matchId': matchId},
+    );
   }
 
   @override
@@ -94,51 +112,46 @@ class LudoRepositoryImpl implements LudoRepository {
     _wsClient.disconnect(ApiEndpoints.wsLudoNamespace);
   }
 
+  Map<String, dynamic> _toMap(dynamic data) =>
+      Map<String, dynamic>.from(data as Map<dynamic, dynamic>);
+
   @override
   void onGameState(void Function(Map<String, dynamic>) handler) =>
-      _wsClient.on(ApiEndpoints.wsLudoNamespace, 'gameState', (data) {
-        handler(Map<String, dynamic>.from(data as Map<dynamic, dynamic>));
-      });
+      _wsClient.on(ApiEndpoints.wsLudoNamespace, _LudoWsEvents.gameState,
+          (data) => handler(_toMap(data)));
 
   @override
   void onPlayerJoined(void Function(Map<String, dynamic>) handler) =>
-      _wsClient.on(ApiEndpoints.wsLudoNamespace, 'playerJoined', (data) {
-        handler(Map<String, dynamic>.from(data as Map<dynamic, dynamic>));
-      });
+      _wsClient.on(ApiEndpoints.wsLudoNamespace, _LudoWsEvents.playerJoined,
+          (data) => handler(_toMap(data)));
 
   @override
   void onDiceRolled(void Function(Map<String, dynamic>) handler) =>
-      _wsClient.on(ApiEndpoints.wsLudoNamespace, 'diceRolled', (data) {
-        handler(Map<String, dynamic>.from(data as Map<dynamic, dynamic>));
-      });
+      _wsClient.on(ApiEndpoints.wsLudoNamespace, _LudoWsEvents.diceRolled,
+          (data) => handler(_toMap(data)));
 
   @override
   void onPieceMoved(void Function(Map<String, dynamic>) handler) =>
-      _wsClient.on(ApiEndpoints.wsLudoNamespace, 'pieceMoved', (data) {
-        handler(Map<String, dynamic>.from(data as Map<dynamic, dynamic>));
-      });
+      _wsClient.on(ApiEndpoints.wsLudoNamespace, _LudoWsEvents.pieceMoved,
+          (data) => handler(_toMap(data)));
 
   @override
   void onGameEnded(void Function(Map<String, dynamic>) handler) =>
-      _wsClient.on(ApiEndpoints.wsLudoNamespace, 'gameEnded', (data) {
-        handler(Map<String, dynamic>.from(data as Map<dynamic, dynamic>));
-      });
+      _wsClient.on(ApiEndpoints.wsLudoNamespace, _LudoWsEvents.gameEnded,
+          (data) => handler(_toMap(data)));
 
   @override
   void onTurnChanged(void Function(Map<String, dynamic>) handler) =>
-      _wsClient.on(ApiEndpoints.wsLudoNamespace, 'turnChanged', (data) {
-        handler(Map<String, dynamic>.from(data as Map<dynamic, dynamic>));
-      });
+      _wsClient.on(ApiEndpoints.wsLudoNamespace, _LudoWsEvents.turnChanged,
+          (data) => handler(_toMap(data)));
 
   @override
   void onEmoji(void Function(Map<String, dynamic>) handler) =>
-      _wsClient.on(ApiEndpoints.wsLudoNamespace, 'emoji', (data) {
-        handler(Map<String, dynamic>.from(data as Map<dynamic, dynamic>));
-      });
+      _wsClient.on(ApiEndpoints.wsLudoNamespace, _LudoWsEvents.emoji,
+          (data) => handler(_toMap(data)));
 
   @override
   void onConnectionState(void Function(Map<String, dynamic>) handler) =>
-      _wsClient.on(ApiEndpoints.wsLudoNamespace, 'connectionState', (data) {
-        handler(Map<String, dynamic>.from(data as Map<dynamic, dynamic>));
-      });
+      _wsClient.on(ApiEndpoints.wsLudoNamespace, _LudoWsEvents.connectionState,
+          (data) => handler(_toMap(data)));
 }
