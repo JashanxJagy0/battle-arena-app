@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../../config/database';
 import { redis } from '../../config/redis';
@@ -7,7 +8,7 @@ import { AppError } from '../../middleware/error_handler.middleware';
 import type { RegisterInput, LoginInput } from './auth.validation';
 
 const generateReferralCode = (): string => {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
+  return crypto.randomBytes(4).toString('hex').toUpperCase();
 };
 
 const generateTokens = (userId: string, role: string) => {
@@ -145,7 +146,7 @@ export const login = async (data: LoginInput) => {
 };
 
 export const sendOtp = async (phone: string): Promise<{ message: string }> => {
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const otp = crypto.randomInt(100000, 1000000).toString();
 
   // Store OTP in Redis with 5 minute expiry
   await redis.setex(`otp:${phone}`, 300, otp);

@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { env } from '../config/env';
 
 export class AppError extends Error {
   public statusCode: number;
@@ -60,6 +61,6 @@ export const errorHandler = (
 
   res.status(500).json({
     success: false,
-    message: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message,
+    message: env.NODE_ENV === 'production' ? 'Internal server error' : err.message,
   });
 };

@@ -52,12 +52,15 @@ const startServer = async () => {
   }
 };
 
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, shutting down gracefully');
-  server.close();
+const shutdown = async (signal: string) => {
+  console.log(`${signal} received, shutting down gracefully`);
+  await new Promise<void>((resolve) => server.close(() => resolve()));
   await prisma.$disconnect();
   redis.disconnect();
   process.exit(0);
-});
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
 
 startServer();
