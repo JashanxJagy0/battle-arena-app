@@ -1,0 +1,536 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  ENTRY_FEE
+  WINNING_CREDIT
+  BONUS_CREDIT
+  REFERRAL_BONUS
+  REFUND
+  ADMIN_CREDIT
+  ADMIN_DEBIT
+  LOCK
+  UNLOCK
+}
+
+enum TransactionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  EXPIRED
+}
+
+enum LudoGameMode {
+  ONE_V_ONE
+  TWO_V_TWO
+  FOUR_PLAYER
+}
+
+enum LudoMatchStatus {
+  WAITING
+  READY
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  DISPUTED
+  EXPIRED
+}
+
+enum LudoColor {
+  RED
+  GREEN
+  YELLOW
+  BLUE
+}
+
+enum LudoMoveType {
+  MOVE
+  KILL
+  SAFE
+  HOME_ENTRY
+  HOME
+  PASS
+}
+
+enum TournamentGameMode {
+  SOLO
+  DUO
+  SQUAD
+  CLASH_SQUAD
+  BATTLE_ROYALE
+}
+
+enum TournamentType {
+  SINGLE_MATCH
+  MULTI_ROUND
+  LEAGUE
+  KNOCKOUT
+}
+
+enum TournamentStatus {
+  UPCOMING
+  REGISTRATION_OPEN
+  REGISTRATION_CLOSED
+  LIVE
+  COMPLETED
+  CANCELLED
+  DISPUTED
+}
+
+enum ParticipantStatus {
+  REGISTERED
+  CONFIRMED
+  PLAYING
+  COMPLETED
+  DISQUALIFIED
+  WITHDRAWN
+}
+
+enum GameType {
+  LUDO
+  FREE_FIRE
+}
+
+enum WagerStatus {
+  ACTIVE
+  WON
+  LOST
+  REFUNDED
+  CANCELLED
+}
+
+enum BonusType {
+  DAILY_LOGIN
+  WEEKLY_PLAY
+  MONTHLY_LOYALTY
+  REFERRAL
+  FIRST_DEPOSIT
+  DEPOSIT_MATCH
+  LEVEL_UP
+  ACHIEVEMENT
+  ADMIN_GIFT
+  PROMO_CODE
+}
+
+enum BonusFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  ONE_TIME
+}
+
+enum ReferralStatus {
+  PENDING
+  COMPLETED
+  EXPIRED
+}
+
+enum DisputeStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+  REJECTED
+}
+
+model User {
+  id               String    @id @default(uuid())
+  username         String    @unique
+  email            String?   @unique
+  phone            String    @unique
+  passwordHash     String
+  avatarUrl        String?
+  firebaseUid      String?   @unique
+  freeFireUid      String?   @unique
+  freeFireIgn      String?
+  referralCode     String    @unique
+  referredById     String?
+  isVerified       Boolean   @default(false)
+  isBanned         Boolean   @default(false)
+  banReason        String?
+  role             Role      @default(USER)
+  level            Int       @default(1)
+  xp               Int       @default(0)
+  totalGamesPlayed Int       @default(0)
+  totalWins        Int       @default(0)
+  totalLosses      Int       @default(0)
+  winRate          Float     @default(0)
+  lastLoginAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  referredBy User?  @relation("UserReferrals", fields: [referredById], references: [id])
+  referrals  User[] @relation("UserReferrals")
+
+  wallet                 Wallet?
+  cryptoWallets          CryptoWallet[]
+  transactions           Transaction[]
+  ludoMatchPlayers       LudoMatchPlayer[]
+  ludoMoves              LudoMove[]
+  wonMatches             LudoMatch[]             @relation("MatchWinner")
+  tournamentParticipants TournamentParticipant[]
+  wagers                 Wager[]
+  bonuses                Bonus[]
+  referralsMade          Referral[]              @relation("ReferrerRelation")
+  referralReceived       Referral?               @relation("ReferredRelation")
+  notifications          Notification[]
+  disputes               Dispute[]
+  auditLogs              AuditLog[]
+  createdTournaments     Tournament[]            @relation("TournamentCreator")
+  resolvedDisputes       Dispute[]               @relation("DisputeResolver")
+  updatedSettings        AppSetting[]
+
+  @@map("users")
+}
+
+model Wallet {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  mainBalance    Decimal  @default(0) @db.Decimal(18, 2)
+  winningBalance Decimal  @default(0) @db.Decimal(18, 2)
+  bonusBalance   Decimal  @default(0) @db.Decimal(18, 2)
+  lockedBalance  Decimal  @default(0) @db.Decimal(18, 2)
+  totalDeposited Decimal  @default(0) @db.Decimal(18, 2)
+  totalWithdrawn Decimal  @default(0) @db.Decimal(18, 2)
+  totalWagered   Decimal  @default(0) @db.Decimal(18, 2)
+  totalWon       Decimal  @default(0) @db.Decimal(18, 2)
+  currency       String   @default("INR")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("wallets")
+}
+
+model CryptoWallet {
+  id                String   @id @default(uuid())
+  userId            String
+  currency          String
+  network           String
+  depositAddress    String?
+  withdrawalAddress String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, currency, network])
+  @@map("crypto_wallets")
+}
+
+model Transaction {
+  id               String            @id @default(uuid())
+  userId           String
+  type             TransactionType
+  amount           Decimal           @db.Decimal(18, 2)
+  currency         String            @default("INR")
+  cryptoCurrency   String?
+  cryptoAmount     Decimal?          @db.Decimal(18, 8)
+  cryptoTxHash     String?
+  network          String?
+  status           TransactionStatus @default(PENDING)
+  balanceType      String?
+  referenceType    String?
+  referenceId      String?
+  gatewayOrderId   String?
+  gatewayPaymentId String?
+  adminNote        String?
+  metadata         Json?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("transactions")
+}
+
+model LudoMatch {
+  id             String          @id @default(uuid())
+  matchCode      String          @unique
+  gameMode       LudoGameMode
+  entryFee       Decimal         @db.Decimal(18, 2)
+  prizePool      Decimal         @db.Decimal(18, 2)
+  platformFee    Decimal         @default(0) @db.Decimal(18, 2)
+  status         LudoMatchStatus @default(WAITING)
+  winnerId       String?
+  maxPlayers     Int
+  currentPlayers Int             @default(0)
+  boardState     Json?
+  turnUserId     String?
+  turnNumber     Int             @default(0)
+  turnDeadline   DateTime?
+  gameStartedAt  DateTime?
+  gameEndedAt    DateTime?
+  moveHistory    Json?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  winner  User?             @relation("MatchWinner", fields: [winnerId], references: [id])
+  players LudoMatchPlayer[]
+  moves   LudoMove[]
+
+  @@map("ludo_matches")
+}
+
+model LudoMatchPlayer {
+  id           String    @id @default(uuid())
+  matchId      String
+  userId       String
+  color        LudoColor
+  position     Int       @default(0)
+  piecesState  Json?
+  piecesHome   Int       @default(0)
+  isEliminated Boolean   @default(false)
+  finalRank    Int?
+  joinedAt     DateTime  @default(now())
+
+  match LudoMatch @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user  User      @relation(fields: [userId], references: [id])
+
+  @@unique([matchId, userId])
+  @@unique([matchId, color])
+  @@map("ludo_match_players")
+}
+
+model LudoMove {
+  id            String       @id @default(uuid())
+  matchId       String
+  userId        String
+  turnNumber    Int
+  diceValue     Int
+  pieceId       String
+  fromPosition  Int
+  toPosition    Int
+  isKill        Boolean      @default(false)
+  killedUserId  String?
+  killedPieceId String?
+  isHomeEntry   Boolean      @default(false)
+  moveType      LudoMoveType
+  timestamp     DateTime     @default(now())
+
+  match LudoMatch @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user  User      @relation(fields: [userId], references: [id])
+
+  @@map("ludo_moves")
+}
+
+model Tournament {
+  id                  String             @id @default(uuid())
+  title               String
+  description         String?
+  game                String
+  gameMode            TournamentGameMode
+  tournamentType      TournamentType
+  mapName             String?
+  entryFee            Decimal            @db.Decimal(18, 2)
+  prizePool           Decimal            @db.Decimal(18, 2)
+  platformFee         Decimal            @default(0) @db.Decimal(18, 2)
+  maxParticipants     Int
+  currentParticipants Int                @default(0)
+  minParticipants     Int                @default(2)
+  perKillPrize        Decimal?           @db.Decimal(18, 2)
+  prizeDistribution   Json?
+  status              TournamentStatus   @default(UPCOMING)
+  roomId              String?
+  roomPassword        String?
+  roomVisibleAt       DateTime?
+  registrationStart   DateTime?
+  registrationEnd     DateTime?
+  matchStart          DateTime?
+  matchEnd            DateTime?
+  rules               String?
+  bannerImageUrl      String?
+  createdById         String
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  createdBy    User                    @relation("TournamentCreator", fields: [createdById], references: [id])
+  participants TournamentParticipant[]
+
+  @@map("tournaments")
+}
+
+model TournamentParticipant {
+  id            String            @id @default(uuid())
+  tournamentId  String
+  userId        String
+  teamName      String?
+  freeFireUid   String?
+  freeFireIgn   String?
+  status        ParticipantStatus @default(REGISTERED)
+  kills         Int               @default(0)
+  placement     Int?
+  points        Int               @default(0)
+  prizeWon      Decimal?          @db.Decimal(18, 2)
+  screenshotUrl String?
+  joinedAt      DateTime          @default(now())
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id])
+
+  @@unique([tournamentId, userId])
+  @@map("tournament_participants")
+}
+
+model Wager {
+  id           String      @id @default(uuid())
+  userId       String
+  gameType     GameType
+  referenceId  String
+  entryAmount  Decimal     @db.Decimal(18, 2)
+  potentialWin Decimal     @db.Decimal(18, 2)
+  actualWin    Decimal?    @db.Decimal(18, 2)
+  netProfit    Decimal?    @db.Decimal(18, 2)
+  status       WagerStatus @default(ACTIVE)
+  settledAt    DateTime?
+  createdAt    DateTime    @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("wagers")
+}
+
+model Bonus {
+  id                  String    @id @default(uuid())
+  userId              String
+  bonusType           BonusType
+  amount              Decimal   @db.Decimal(18, 2)
+  wageringRequirement Decimal   @default(0) @db.Decimal(18, 2)
+  wageredAmount       Decimal   @default(0) @db.Decimal(18, 2)
+  isClaimed           Boolean   @default(false)
+  isExpired           Boolean   @default(false)
+  expiresAt           DateTime?
+  claimedAt           DateTime?
+  createdAt           DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("bonuses")
+}
+
+model BonusSchedule {
+  id                 String         @id @default(uuid())
+  bonusType          BonusType
+  frequency          BonusFrequency
+  baseAmount         Decimal        @db.Decimal(18, 2)
+  multiplierRules    Json?
+  minGamesRequired   Int            @default(0)
+  minDepositRequired Decimal        @default(0) @db.Decimal(18, 2)
+  isActive           Boolean        @default(true)
+  createdAt          DateTime       @default(now())
+
+  @@map("bonus_schedules")
+}
+
+model Referral {
+  id            String         @id @default(uuid())
+  referrerId    String
+  referredId    String         @unique
+  referrerBonus Decimal?       @db.Decimal(18, 2)
+  referredBonus Decimal?       @db.Decimal(18, 2)
+  status        ReferralStatus @default(PENDING)
+  createdAt     DateTime       @default(now())
+
+  referrer User @relation("ReferrerRelation", fields: [referrerId], references: [id])
+  referred User @relation("ReferredRelation", fields: [referredId], references: [id])
+
+  @@map("referrals")
+}
+
+model Notification {
+  id            String   @id @default(uuid())
+  userId        String
+  title         String
+  body          String
+  type          String
+  referenceType String?
+  referenceId   String?
+  isRead        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model Dispute {
+  id            String        @id @default(uuid())
+  userId        String
+  gameType      GameType
+  referenceId   String
+  reason        String
+  evidenceUrls  String[]
+  status        DisputeStatus @default(OPEN)
+  adminResponse String?
+  resolvedById  String?
+  resolvedAt    DateTime?
+  createdAt     DateTime      @default(now())
+
+  user       User  @relation(fields: [userId], references: [id])
+  resolvedBy User? @relation("DisputeResolver", fields: [resolvedById], references: [id])
+
+  @@map("disputes")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  adminId    String
+  action     String
+  entityType String
+  entityId   String
+  oldValue   Json?
+  newValue   Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  admin User @relation(fields: [adminId], references: [id])
+
+  @@map("audit_logs")
+}
+
+model AppSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       Json
+  description String?
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+
+  updatedBy User? @relation(fields: [updatedById], references: [id])
+
+  @@map("app_settings")
+}
+
+model PromoCode {
+  id          String    @id @default(uuid())
+  code        String    @unique
+  bonusType   BonusType
+  bonusAmount Decimal   @db.Decimal(18, 2)
+  maxUses     Int?
+  currentUses Int       @default(0)
+  minDeposit  Decimal?  @db.Decimal(18, 2)
+  isActive    Boolean   @default(true)
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@map("promo_codes")
+}
