@@ -29,6 +29,15 @@ const envSchema = z.object({
 
   ADMIN_EMAIL: z.string().email().default('admin@battlearena.com'),
   ADMIN_PASSWORD: z.string().min(8),
+
+  NOWPAYMENTS_API_KEY: z.string().optional(),
+  NOWPAYMENTS_IPN_SECRET: z.string().optional(),
+  NOWPAYMENTS_API_URL: z.string().default('https://api.nowpayments.io/v1'),
+
+  APP_BASE_URL: z.string().default('http://localhost:3000'),
+  COINGECKO_API_URL: z.string().default('https://api.coingecko.com/api/v3'),
+
+  DAILY_WITHDRAWAL_LIMIT_USD: z.coerce.number().default(500),
 });
 
 const parsed = envSchema.safeParse(process.env);
