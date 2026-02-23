@@ -8,6 +8,8 @@ import { redis } from './config/redis';
 import { setIo } from './websockets/socket_manager';
 import { setupLudoGateway } from './modules/ludo/ludo.gateway';
 import { startTournamentCron } from './jobs/tournament_cron';
+import { startBonusCron } from './jobs/bonus_cron';
+import { startLeaderboardCron } from './jobs/leaderboard_cron';
 
 const server = http.createServer(app);
 
@@ -56,6 +58,8 @@ const startServer = async () => {
     server.listen(env.PORT, () => {
       console.log(`🚀 Server running on port ${env.PORT} in ${env.NODE_ENV} mode`);
       startTournamentCron();
+      startBonusCron();
+      startLeaderboardCron();
     });
   } catch (error) {
     console.error('Failed to start server:', error);
