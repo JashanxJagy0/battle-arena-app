@@ -154,3 +154,7 @@ flutter_app/android/key.properties
 flutter_app/**/*.g.dart
 flutter_app/**/*.freezed.dart
 
+# Admin Panel
+admin_panel/node_modules/
+admin_panel/dist/
+
