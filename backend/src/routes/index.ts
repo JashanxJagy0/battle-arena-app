@@ -9,6 +9,7 @@ import wagerRouter from '../modules/wager/wager.routes';
 import leaderboardRouter from '../modules/leaderboard/leaderboard.routes';
 import referralRouter from '../modules/referral/referral.routes';
 import notificationRouter from '../modules/notification/notification.routes';
+import adminRouter from '../modules/admin/admin.routes';
 
 export const apiRouter = Router();
 
@@ -23,3 +24,4 @@ apiRouter.use('/wagers', wagerRouter);
 apiRouter.use('/leaderboard', leaderboardRouter);
 apiRouter.use('/referral', referralRouter);
 apiRouter.use('/notifications', notificationRouter);
+apiRouter.use('/admin', adminRouter);
