@@ -22,6 +22,14 @@ import '../features/freefire/presentation/pages/room_card_screen.dart';
 import '../features/freefire/presentation/pages/join_tournament_screen.dart';
 import '../features/freefire/presentation/pages/tournament_result_screen.dart';
 import '../features/freefire/domain/entities/tournament.dart';
+import '../features/bonus/presentation/screens/bonus_screen.dart';
+import '../features/wager/presentation/screens/wager_history_screen.dart';
+import '../features/profile/presentation/screens/profile_screen.dart';
+import '../features/profile/presentation/screens/edit_profile_screen.dart';
+import '../features/profile/presentation/screens/settings_screen.dart';
+import '../features/leaderboard/presentation/screens/leaderboard_screen.dart';
+import '../features/referral/presentation/screens/referral_screen.dart';
+import '../features/notifications/presentation/screens/notifications_screen.dart';
 
 class AppRouter {
   static GoRouter createRouter(AuthBloc authBloc) {
@@ -84,7 +92,7 @@ class AppRouter {
             ),
             GoRoute(
               path: '/home/profile',
-              builder: (context, state) => const _PlaceholderScreen(title: 'Profile'),
+              builder: (context, state) => const ProfileScreen(),
             ),
           ],
         ),
@@ -175,31 +183,31 @@ class AppRouter {
         ),
         GoRoute(
           path: '/wagers',
-          builder: (context, state) => const _PlaceholderScreen(title: 'Wager History'),
+          builder: (context, state) => const WagerHistoryScreen(),
         ),
         GoRoute(
           path: '/bonuses',
-          builder: (context, state) => const _PlaceholderScreen(title: 'Bonuses'),
+          builder: (context, state) => const BonusScreen(),
         ),
         GoRoute(
           path: '/leaderboard',
-          builder: (context, state) => const _PlaceholderScreen(title: 'Leaderboard'),
+          builder: (context, state) => const LeaderboardScreen(),
         ),
         GoRoute(
           path: '/referral',
-          builder: (context, state) => const _PlaceholderScreen(title: 'Referral'),
+          builder: (context, state) => const ReferralScreen(),
         ),
         GoRoute(
           path: '/notifications',
-          builder: (context, state) => const _PlaceholderScreen(title: 'Notifications'),
+          builder: (context, state) => const NotificationsScreen(),
         ),
         GoRoute(
           path: '/profile/edit',
-          builder: (context, state) => const _PlaceholderScreen(title: 'Edit Profile'),
+          builder: (context, state) => const EditProfileScreen(),
         ),
         GoRoute(
           path: '/settings',
-          builder: (context, state) => const _PlaceholderScreen(title: 'Settings'),
+          builder: (context, state) => const SettingsScreen(),
         ),
       ],
     );
@@ -217,18 +225,4 @@ class _HomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const SizedBox.shrink();
-}
-
-class _PlaceholderScreen extends StatelessWidget {
-  final String title;
-
-  const _PlaceholderScreen({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(child: Text(title)),
-    );
-  }
 }
