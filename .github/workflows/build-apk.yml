@@ -1,0 +1,31 @@
+name: Build Flutter APK
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'flutter_app/**'
+  workflow_dispatch:  # manual trigger
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+          channel: 'stable'
+      - name: Get dependencies
+        working-directory: flutter_app
+        run: flutter pub get
+      - name: Build APK
+        working-directory: flutter_app
+        run: flutter build apk --release
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: battle-arena-release-apk
+          path: flutter_app/build/app/outputs/flutter-apk/app-release.apk
