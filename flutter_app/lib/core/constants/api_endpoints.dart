@@ -1,7 +1,7 @@
 class ApiEndpoints {
   ApiEndpoints._();
 
-  static const String baseUrl = 'https://api.battle-arena.app/api/v1';
+  static const String baseUrl = 'https://api.play-casino.app/api/v1';  // ✅ CORRECT';
 
   // Auth
   static const String login = '/auth/login';
@@ -62,6 +62,6 @@ class ApiEndpoints {
   static const String freefireSubmitResult = '/freefire/tournaments/:id/result';
 
   // WebSocket namespaces
-  static const String wsBaseUrl = 'wss://api.battle-arena.app';
+  static const String wsBaseUrl = 'wss://api.play-casino.app';  
   static const String wsLudoNamespace = '/ludo';
 }
