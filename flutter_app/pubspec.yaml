@@ -56,6 +56,9 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/animations/
+  # NOTE: Placeholder font files are included. For production, download Orbitron
+  # from https://fonts.google.com/specimen/Orbitron and replace the files in
+  # assets/fonts/. The google_fonts package is also available as a runtime fallback.
   fonts:
     - family: Orbitron
       fonts:

@@ -1,7 +1,9 @@
+import 'env_config.dart';
+
 class ApiEndpoints {
   ApiEndpoints._();
 
-  static const String baseUrl = 'https://api.play-casino.app/api/v1';  // ✅ CORRECT';
+  static const String baseUrl = EnvConfig.apiBaseUrl;
 
   // Auth
   static const String login = '/auth/login';
@@ -62,6 +64,6 @@ class ApiEndpoints {
   static const String freefireSubmitResult = '/freefire/tournaments/:id/result';
 
   // WebSocket namespaces
-  static const String wsBaseUrl = 'wss://api.play-casino.app';  
+  static const String wsBaseUrl = EnvConfig.wsBaseUrl;
   static const String wsLudoNamespace = '/ludo';
 }
