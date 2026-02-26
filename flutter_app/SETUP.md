@@ -95,7 +95,7 @@ flutter build apk --release \
   -PRELEASE_KEY_PASSWORD=your_key_password
 ```
 
-Or add these properties to `android/gradle.properties` (do **not** commit this file with real passwords):
+Or add these properties to `android/key.properties` (this file is gitignored):
 
 ```properties
 RELEASE_STORE_FILE=/path/to/keystore.jks
@@ -103,3 +103,5 @@ RELEASE_STORE_PASSWORD=your_store_password
 RELEASE_KEY_ALIAS=battle-arena
 RELEASE_KEY_PASSWORD=your_key_password
 ```
+
+> **Security:** Never commit signing credentials. The `key.properties` file is already listed in `.gitignore`.
